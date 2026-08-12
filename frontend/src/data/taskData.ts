@@ -1,66 +1,28 @@
+// for single Task component
 export type TaskType = {
-  id: number;
+  id: string;
   title: string;
   subject: string;
   completed: boolean;
 };
 
+// describes what MongoDB sends 
+export type ApiTaskType = {
+  _id: string;
+  title: string;
+  subject: string;
+  completed: boolean;
+  date: string;
+};
+
+// for the whole taskCard 
 export type DayType = {
-  id: number;
+  id: string;
   date: string;
   isToday: boolean;
   tasks: TaskType[];
 };
 
-export const taskData: DayType[] = [
-  {
-    id: 1,
-    date: "5 Aug",
-    isToday: true,
-
-    tasks: [
-      {
-        id: 101,
-        title: "Solve Two Sum",
-        subject: "DSA",
-        completed: true,
-      },
-      {
-        id: 102,
-        title: "Learn Express",
-        subject: "Backend",
-        completed: false,
-      },
-      {
-        id: 103,
-        title: "Revise DBMS",
-        subject: "Core",
-        completed: false,
-      },
-    ],
-  },
-
-  {
-    id: 2,
-    date: "4 Aug",
-    isToday: false,
-
-    tasks: [
-      {
-        id: 201,
-        title: "Binary Search",
-        subject: "DSA",
-        completed: true,
-      },
-      {
-        id: 202,
-        title: "MongoDB practice",
-        subject: "Backend",
-        completed: true,
-      },
-    ],
-  },
-];
 
 // TaskType defines the structure of ONE task object.
 // A TaskType must have:
@@ -80,6 +42,3 @@ export const taskData: DayType[] = [
 // "export type" creates and exports a TypeScript blueprint/type.
 // It doesn't store any actual data.
 // It tells TypeScript what shape our objects are expected to have.
-
-
-// taskData is the actual variable containing our mock data.

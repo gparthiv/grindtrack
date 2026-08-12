@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Task from "./Task";
 import { type DayType } from "../data/taskData";
+import AddTask from "./AddTask";
 import SubjectTag from "./SubjectTag";
 import {
   Check,
@@ -8,16 +9,27 @@ import {
   ChevronUp
 } from "lucide-react";
 
+import { formatDate } from "../utils/formatDate";
+
+type TaskUpdate = {
+  title?: string;
+  subject?: string;
+  completed?: boolean;
+}
+
+
 type TaskCardProps = {
   day: DayType;
-  toggleTask: (dayId: number, taskId: number) => void;
+  patchTask: (taskId: string, updates: TaskUpdate) => void;
+  deleteTask: (taskId: string) => void;
+  createTask: (title: string, subject: string) => void;
 };
 
 
-function TaskCard({ day, toggleTask }: TaskCardProps) {
+function TaskCard({ day, patchTask, deleteTask, createTask }: TaskCardProps) {
 
   const [open, setOpen] = useState(false);
-
+  const [adding, setAdding] = useState(false);
 
   function toggleDropdown() {
     setOpen(!open);
@@ -40,10 +52,10 @@ function TaskCard({ day, toggleTask }: TaskCardProps) {
   return (
     <div
       className="
-        relative flex border border-slate-200 dark:border-neutral-700
-        bg-slate-100 dark:bg-neutral-800 max-w-4xl rounded-md mx-auto
-        overflow-hidden mb-4 py-2
-      "
+    relative flex border border-slate-200 dark:border-neutral-700
+    bg-slate-100 dark:bg-neutral-800 max-w-4xl rounded-md mx-auto
+    overflow-hidden mb-4 py-2
+    "
     >
 
       {/* LEFT SIDE */}
@@ -54,7 +66,7 @@ function TaskCard({ day, toggleTask }: TaskCardProps) {
 
           <div className="font-bold scale-125">{completed}</div>
 
-          {!day.isToday ? (<div className="scale-70">DONE</div>) : (<div className="scale-70">DAY</div>)}
+          {!day.isToday ? (<div className="scale-70">DONE</div>) : (<div className="scale-70">TODAY</div>)}
 
         </div>
 
@@ -73,18 +85,8 @@ function TaskCard({ day, toggleTask }: TaskCardProps) {
           <div className="flex gap-1">
 
             <div className="text-black dark:text-white">
-              {day.date}
+              {formatDate(day.date)}
             </div>
-
-            {day.isToday && (
-              <div className="rounded-sm bg-slate-100 dark:bg-neutral-800 px-2 scale-80 border border-slate-300 dark:border-neutral-700">
-                <span className="my-auto text-black dark:text-white text-xs">
-                  TODAY
-                </span>
-
-              </div>
-            )}
-
           </div>
 
 
@@ -121,7 +123,11 @@ function TaskCard({ day, toggleTask }: TaskCardProps) {
             <button onClick={toggleDropdown} className="px-1 text-black dark:text-white">
               {open ? (<ChevronUp size={16} />) : (<ChevronDown size={16} />)}
             </button>
-
+            {day.isToday && (<button className="dark:text-white"
+              onClick={() => setAdding(!adding)}
+            >
+              +
+            </button>)}
           </div>
 
         </div>
@@ -130,20 +136,30 @@ function TaskCard({ day, toggleTask }: TaskCardProps) {
         {/* DROPDOWN */}
 
         {open && (
-          <div className="flex flex-col gap-2 my-2 mx-3">
+          <>
+            <div className="flex flex-col gap-2 my-2 mx-3">
 
-            {day.tasks.map((task) => (
+              {day.tasks.map((task) => (
 
-              <Task
-                key={task.id}
-                task={task}
-                day={day}
-                toggleTask={toggleTask}
+                <Task
+                  key={task.id}
+                  task={task}
+                  day={day}
+                  patchTask={patchTask}
+                  deleteTask={deleteTask}
+                />
+
+              ))}
+
+            </div>
+            {adding && (
+              <AddTask
+                createTask={createTask}
+                closeAddTask={() => setAdding(false)}
               />
+            )}
+          </>
 
-            ))}
-
-          </div>
         )}
 
       </div>
@@ -169,10 +185,10 @@ export default TaskCard;
 
 // TaskCardProps defines what TaskCard must receive:
 // 1. day -> one actual day object following DayType
-// 2. toggleTask -> a function that takes dayId and taskId and returns nothing
+// 2. patchTask -> a function that takes dayId and taskId and returns nothing
 
 
-// function TaskCard({ day, toggleTask }: TaskCardProps)
+// function TaskCard({ day, patchTask }: TaskCardProps)
 //
 // destructures the two actual props received by TaskCard,
 // while : TaskCardProps tells TypeScript what structure those props must follow.
@@ -226,7 +242,7 @@ export default TaskCard;
 // Each <Task /> receives:
 // task -> the current task object
 // day -> the current day object
-// toggleTask -> the function originally created in Dashboard
+// patchTask -> the function originally created in Dashboard
 
 
 // key={task.id} is used by React to uniquely identify each Task

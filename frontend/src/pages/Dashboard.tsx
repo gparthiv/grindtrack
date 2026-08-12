@@ -1,45 +1,150 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TaskCard from "../components/TaskCard";
-import { taskData } from "../data/taskData";
+import { type ApiTaskType, type DayType } from "../data/taskData";
+
+// translates API json to required Day[x,y,z,[]] type
+// first name each json response from mongo as tasks which will initially be in DayType[]
+// define grouped object containing a string and the API response 
+// go thru each mongodb each json resp named task and make date const by splitting the task.date
+// then check if grouped[date] exists or not if not then init with empty []
+// else push the task in that dated group
+// define days as each object put id and date as the res date
+// isToday true false if it is today Date.toISOString()
+// then in tasks init each task we got from response
+// return days
+
+// HELPING FUNCTION
+
+function groupTaskByDate(tasks: ApiTaskType[]): DayType[] {
+  const grouped: Record<string, ApiTaskType[]> = {};
+
+  tasks.forEach((task) => {
+    const date = task.date.split("T")[0];
+
+    if (!grouped[date]) {
+      grouped[date] = [];
+    }
+
+    grouped[date].push(task);
+  });
+
+  const days = Object.entries(grouped).map(([date, tasks]) => ({
+    id: date,
+    date: date,
+    isToday: date === new Date().toISOString().split("T")[0],
+    tasks: tasks.map((task) => ({
+      id: task._id,
+      title: task.title,
+      subject: task.subject,
+      completed: task.completed
+    }))
+  }));
+  const today = new Date().toISOString().split("T")[0];
+
+  const todayExists = days.some(
+    (day) => day.date === today
+  );
+
+  if (!todayExists) {
+    days.push({
+      id: today,
+      date: today,
+      isToday: true,
+      tasks: []
+    });
+  }
+
+  // Newest date first
+  days.sort(
+    (a, b) => b.date.localeCompare(a.date)
+  );
+
+  return days;
+}
+
 
 function Dashboard() {
+  // to store the days state object that is response from server
+  const [days, setDays] = useState<DayType[]>([]);
+  // fetch the api get the data from there and setDay using the above helping func to flat the response
+  // setDay as the days we return from groupTaskbyDays
 
-  const [days, setDays] = useState(taskData);
-
-
-  function toggleTask(dayId: number, taskId: number) {
-
-    setDays(
-      days.map((day) => {
-
-        // Not the day we clicked
-        if (day.id !== dayId) {
-          return day;
-        }
-
-        // This is the correct day
-        const updatedTasks = day.tasks.map((task) => {
-
-          // This is the task we clicked
-          if (task.id === taskId) {
-            return {
-              ...task,
-              completed: !task.completed
-            };
-          }
-
-          return task;
-        });
-
-
-        return {
-          ...day,
-          tasks: updatedTasks
-        };
-
-      })
-    );
+  // getTask creates a res constant and fetches the backend api, data constant stores the json data of res
+  // groupedDays stores the helping function processed data const
+  // setDay sets the state as the groupedDays data
+  // this becomes GET 
+  async function getTask() {
+    const res = await fetch("http://localhost:8000/api/tasks");
+    const data = await res.json();
+    const groupedDays = groupTaskByDate(data);
+    setDays(groupedDays);
   }
+
+  // defines the TaskUpdate type 
+  type TaskUpdate = {
+    title?: string;
+    subject?: string;
+    completed?: boolean;
+  };
+
+  // 
+  // PATCH
+  async function patchTask(taskId: string, updates: TaskUpdate) {
+    const res = await fetch(`http://localhost:8000/api/tasks/${taskId}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates)
+      }
+    );
+    if (!res.ok) {
+      console.log("Failed to update task");
+      return;
+    }
+    getTask();
+  }
+
+
+  // DELETE
+  async function deleteTask(taskId: string) {
+    const res = await fetch(`http://localhost:8000/api/tasks/${taskId}`,
+      {
+        method: "DELETE"
+      }
+    );
+    if (!res.ok) {
+      console.log("Failed to delete task");
+      return;
+    }
+    getTask();
+  }
+
+
+  // CREATE
+  async function createTask(title: string, subject: string) {
+    const res = await fetch("http://localhost:8000/api/tasks",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title,
+          subject: subject,
+          date: new Date().toISOString(),
+        })
+      }
+    );
+    if (!res.ok) {
+      console.log("Failed to create task");
+      return;
+    }
+    getTask();
+  };
+
+
+  // each time render the getTask when needed
+  useEffect(() => {
+    getTask()
+  }, []);
 
 
   return (
@@ -49,7 +154,9 @@ function Dashboard() {
         <TaskCard
           key={day.id}
           day={day}
-          toggleTask={toggleTask}
+          patchTask={patchTask}
+          deleteTask={deleteTask}
+          createTask={createTask}
         />
       ))}
 
@@ -58,92 +165,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
-// imports useState to store the current days data as React state
-// imports the TaskCard component and initial taskData
-
-// inside Dashboard create days state:
-// taskData = initial data
-// days = current/changeable data
-
-// create toggleTask function which gets passed:
-// Dashboard -> TaskCard -> Task
-
-// toggleTask receives dayId and taskId
-
-// suppose we click task 103 belonging to day 1
-// toggleTask(1, 103) gets called
-
-
-// setDays updates our days state
-
-// first days.map() iterates through every day
-
-// check:
-// day.id !== dayId
-
-// if ID doesn't match, this isn't the day we need
-// so return the day unchanged
-
-// if ID matches, we've found the correct day
-
-
-// now create updatedTasks by doing day.tasks.map()
-
-// this iterates through every task INSIDE the matched day
-
-// check:
-// task.id === taskId
-
-// if the task ID matches, copy the entire task using:
-// ...task
-
-// ...task means keep all existing properties of that task
-
-// then overwrite only:
-// completed: !task.completed
-
-// so:
-// false -> true
-// true -> false
-
-// if task ID doesn't match, return that task unchanged
-
-
-// updatedTasks now contains all the original tasks
-// except the clicked task has its completed value toggled
-
-
-// now return:
-// {
-//   ...day,
-//   tasks: updatedTasks
-// }
-
-// ...day copies the matched day as it was
-// but tasks: updatedTasks replaces its old tasks array
-// with our newly updated tasks array
-
-
-// days.map() therefore produces a new days array where:
-// non-matching days = unchanged
-// matching day = contains updatedTasks
-
-// setDays saves this new array into React state
-
-
-// finally Dashboard renders the current days state:
-
-// days.map((day) => <TaskCard />)
-
-// this creates one TaskCard for every day
-
-// each TaskCard receives:
-// key={day.id} -> used by React to identify the card
-// day={day} -> actual day object
-// toggleTask={toggleTask} -> function used to modify task state
-
-// toggleTask continues down:
-// Dashboard -> TaskCard -> Task
-
-// Dashboard is finally rendered by App.tsx
