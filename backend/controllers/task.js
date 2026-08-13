@@ -14,7 +14,7 @@ function isToday(date) {
 // GET / READ
 async function handleAllGet(req, res) {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find({ userId: req.user._id });
     res.status(200).json(tasks);
   }
   catch (err) {
@@ -27,8 +27,10 @@ async function handleAllGet(req, res) {
 // UPDATE /  PATCH
 async function patchTaskById(req, res) {
   try {
-    const taskId = req.params.id;
-    const task = await Task.findById(taskId);
+    const task = await Task.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
     if (!task) {
       return res.status(404).json({
         message: "Task not found"
@@ -41,8 +43,12 @@ async function patchTaskById(req, res) {
       })
     }
 
-    const updatedTask = await Task.findByIdAndUpdate(
-      taskId, req.body,
+    const updatedTask = await Task.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user._id
+      },
+      req.body,
       {
         new: true
       }
@@ -61,19 +67,24 @@ async function patchTaskById(req, res) {
 // DELETE
 async function deleteTaskById(req, res) {
   try {
-    const taskId = req.params.id;
-    const task = await Task.findById(taskId);
-    if(!task){
-      res.status(404).json({
+    const task = await Task.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+    if (!task) {
+      return res.status(404).json({
         msg: "task not found"
       });
     }
-    if(!isToday(task.date)){
-      res.status(403).json({
+    if (!isToday(task.date)) {
+      return res.status(403).json({
         msg: "previous task not deletable"
       })
     }
-    const deletedTask = await Task.findByIdAndDelete(taskId);
+    const deletedTask = await Task.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user._id
+    });
     if (!deletedTask) {
       return res.status(404).json({
         message: "Task Not found"
@@ -91,18 +102,27 @@ async function deleteTaskById(req, res) {
 // POST / CREATE
 async function postTask(req, res) {
   try {
-    const { title, subject } = req.body;
+    const { title, subject, date } = req.body;
+
     if (!title || !subject) {
-      return res.status(400).json({ message: 'Title and Subject required' });
+      return res.status(400).json({
+        message: "Title and Subject required"
+      });
     }
+
     const newTask = await Task.create({
-      title: title,
-      subject: subject,
-      date: new Date()
+      title,
+      subject,
+      date: date || new Date(),
+      userId: req.user._id
     });
-    res.status(201).json(newTask);
+
+    return res.status(201).json(newTask);
+
   } catch (error) {
-    res.status(500).json({
+    console.error(error);
+
+    return res.status(500).json({
       message: "Failed to create task"
     });
   }
