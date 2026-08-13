@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import TaskCard from "../components/TaskCard";
 import { type ApiTaskType, type DayType } from "../data/taskData";
+import { useNavigate } from "react-router-dom";
 
 // translates API json to required Day[x,y,z,[]] type
 // first name each json response from mongo as tasks which will initially be in DayType[]
@@ -18,6 +19,7 @@ import { type ApiTaskType, type DayType } from "../data/taskData";
 function groupTaskByDate(tasks: ApiTaskType[]): DayType[] {
   const grouped: Record<string, ApiTaskType[]> = {};
 
+  // Group actual MongoDB tasks by date
   tasks.forEach((task) => {
     const date = task.date.split("T")[0];
 
@@ -28,35 +30,46 @@ function groupTaskByDate(tasks: ApiTaskType[]): DayType[] {
     grouped[date].push(task);
   });
 
-  const days = Object.entries(grouped).map(([date, tasks]) => ({
-    id: date,
-    date: date,
-    isToday: date === new Date().toISOString().split("T")[0],
-    tasks: tasks.map((task) => ({
-      id: task._id,
-      title: task.title,
-      subject: task.subject,
-      completed: task.completed
-    }))
-  }));
+  // Convert grouped object into DayType[]
+  const days: DayType[] = Object.entries(grouped).map(
+    ([date, tasks]) => ({
+      id: date,
+      date: date,
+      isToday:
+        date === new Date().toISOString().split("T")[0],
+
+      tasks: tasks.map((task) => ({
+        id: task._id,
+        title: task.title,
+        subject: task.subject,
+        completed: task.completed,
+      })),
+    })
+  );
+
+  // Today's date
   const today = new Date().toISOString().split("T")[0];
 
+  // Check whether MongoDB returned any task for today
   const todayExists = days.some(
     (day) => day.date === today
   );
 
+  // If not, create an EMPTY day
   if (!todayExists) {
     days.push({
       id: today,
       date: today,
       isToday: true,
-      tasks: []
+      tasks: [],
     });
   }
 
-  // Newest date first
+  // Newest day first
   days.sort(
-    (a, b) => b.date.localeCompare(a.date)
+    (a, b) =>
+      new Date(b.date).getTime() -
+      new Date(a.date).getTime()
   );
 
   return days;
@@ -65,6 +78,7 @@ function groupTaskByDate(tasks: ApiTaskType[]): DayType[] {
 
 function Dashboard() {
   // to store the days state object that is response from server
+  const navigate = useNavigate();
   const [days, setDays] = useState<DayType[]>([]);
   // fetch the api get the data from there and setDay using the above helping func to flat the response
   // setDay as the days we return from groupTaskbyDays
@@ -74,9 +88,37 @@ function Dashboard() {
   // setDay sets the state as the groupedDays data
   // this becomes GET 
   async function getTask() {
-    const res = await fetch("http://localhost:8000/api/tasks");
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const res = await fetch(
+      "http://localhost:8000/api/tasks",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
     const data = await res.json();
+
+    if (!res.ok) {
+      console.log(data.message);
+
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+
+      return;
+    }
+
     const groupedDays = groupTaskByDate(data);
+
     setDays(groupedDays);
   }
 
@@ -87,58 +129,92 @@ function Dashboard() {
     completed?: boolean;
   };
 
-  // 
   // PATCH
-  async function patchTask(taskId: string, updates: TaskUpdate) {
-    const res = await fetch(`http://localhost:8000/api/tasks/${taskId}`,
+  async function patchTask(
+    taskId: string,
+    updates: TaskUpdate
+  ) {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `http://localhost:8000/api/tasks/${taskId}`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates)
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
       }
     );
+
+    const data = await res.json();
+
     if (!res.ok) {
-      console.log("Failed to update task");
+      console.log(data.message);
       return;
     }
+
     getTask();
   }
 
 
   // DELETE
   async function deleteTask(taskId: string) {
-    const res = await fetch(`http://localhost:8000/api/tasks/${taskId}`,
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `http://localhost:8000/api/tasks/${taskId}`,
       {
-        method: "DELETE"
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
+
     if (!res.ok) {
-      console.log("Failed to delete task");
+      const data = await res.json();
+      console.log(data.message);
       return;
     }
+
     getTask();
   }
 
 
   // CREATE
-  async function createTask(title: string, subject: string) {
-    const res = await fetch("http://localhost:8000/api/tasks",
+  async function createTask(
+    title: string,
+    subject: string
+  ) {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      "http://localhost:8000/api/tasks",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          title: title,
-          subject: subject,
+          title,
+          subject,
           date: new Date().toISOString(),
-        })
+        }),
       }
     );
+
+    const data = await res.json();
+
     if (!res.ok) {
-      console.log("Failed to create task");
+      console.log(data.message);
       return;
     }
+
     getTask();
-  };
+  }
 
 
   // each time render the getTask when needed

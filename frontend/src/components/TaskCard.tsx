@@ -28,7 +28,7 @@ type TaskCardProps = {
 
 function TaskCard({ day, patchTask, deleteTask, createTask }: TaskCardProps) {
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(day.isToday);
   const [adding, setAdding] = useState(false);
 
   function toggleDropdown() {
@@ -136,30 +136,24 @@ function TaskCard({ day, patchTask, deleteTask, createTask }: TaskCardProps) {
         {/* DROPDOWN */}
 
         {open && (
-          <>
-            <div className="flex flex-col gap-2 my-2 mx-3">
-
-              {day.tasks.map((task) => (
-
-                <Task
-                  key={task.id}
-                  task={task}
-                  day={day}
-                  patchTask={patchTask}
-                  deleteTask={deleteTask}
-                />
-
-              ))}
-
-            </div>
-            {adding && (
-              <AddTask
-                createTask={createTask}
-                closeAddTask={() => setAdding(false)}
+          <div className="flex flex-col gap-2 my-2 mx-3">
+            {day.tasks.map((task) => (
+              <Task
+                key={task.id}
+                task={task}
+                day={day}
+                patchTask={patchTask}
+                deleteTask={deleteTask}
               />
-            )}
-          </>
+            ))}
+          </div>
+        )}
 
+        {adding && day.isToday && (
+          <AddTask
+            createTask={createTask}
+            closeAddTask={() => setAdding(false)}
+          />
         )}
 
       </div>
