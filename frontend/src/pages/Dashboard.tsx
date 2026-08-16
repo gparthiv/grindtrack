@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import TaskCard from "../components/TaskCard";
 import { type ApiTaskType, type DayType } from "../data/taskData";
 import { useNavigate } from "react-router-dom";
-
+import { getLocalDate } from "../utils/formatDate";
 // translates API json to required Day[x,y,z,[]] type
 // first name each json response from mongo as tasks which will initially be in DayType[]
 // define grouped object containing a string and the API response 
@@ -36,7 +36,7 @@ function groupTaskByDate(tasks: ApiTaskType[]): DayType[] {
       id: date,
       date: date,
       isToday:
-        date === new Date().toISOString().split("T")[0],
+        date === getLocalDate(),
 
       tasks: tasks.map((task) => ({
         id: task._id,
@@ -48,7 +48,7 @@ function groupTaskByDate(tasks: ApiTaskType[]): DayType[] {
   );
 
   // Today's date
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDate();
 
   // Check whether MongoDB returned any task for today
   const todayExists = days.some(
@@ -201,7 +201,7 @@ function Dashboard() {
         body: JSON.stringify({
           title,
           subject,
-          date: new Date().toISOString(),
+          date: getLocalDate(), 
         }),
       }
     );
