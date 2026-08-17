@@ -126,12 +126,12 @@ function NavBar() {
               {user.name}
             </span>
 
-            <Link
+            {/* <Link
               to="/dashboard"
               className="text-black dark:text-white hover:text-green-600"
             >
               Dashboard
-            </Link>
+            </Link> */}
 
             <button
               onClick={handleLogout}
