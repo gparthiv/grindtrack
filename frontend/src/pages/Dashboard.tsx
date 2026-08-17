@@ -17,7 +17,7 @@ import TaskHeatmap from "../components/TaskHeatmap";
 // return days
 
 // HELPING FUNCTION
-
+const API_URL = import.meta.env.VITE_API_URL;
 function groupTaskByDate(tasks: ApiTaskType[]): DayType[] {
   const grouped: Record<string, ApiTaskType[]> = {};
 
@@ -98,7 +98,7 @@ function Dashboard() {
     }
 
     const res = await fetch(
-      "http://localhost:8000/api/tasks",
+      `${API_URL}/api/tasks`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -139,7 +139,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `http://localhost:8000/api/tasks/${taskId}`,
+      `${API_URL}/api/tasks/${taskId}`,
       {
         method: "PATCH",
         headers: {
@@ -166,7 +166,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `http://localhost:8000/api/tasks/${taskId}`,
+      `${API_URL}/api/tasks/${taskId}`,
       {
         method: "DELETE",
         headers: {
@@ -193,7 +193,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      "http://localhost:8000/api/tasks",
+      `${API_URL}/api/tasks`,
       {
         method: "POST",
         headers: {
