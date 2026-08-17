@@ -1,6 +1,6 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import logoLight from "../assets/logo-light.png";
 import logoDark from "../assets/logo-dark.png";
@@ -14,7 +14,6 @@ type UserToken = {
 
 function NavBar() {
   const [darkMode, setDarkMode] = useState(true);
-  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -120,18 +119,12 @@ function NavBar() {
       {/* RIGHT SIDE */}
       <div className="flex items-center gap-6">
 
-        {user && location.pathname !== "/" ? (
+        {/* LOGGED-IN CONTROLS */}
+        {user && (
           <>
             <span className="text-black dark:text-white">
               {user.name}
             </span>
-
-            {/* <Link
-              to="/dashboard"
-              className="text-black dark:text-white hover:text-green-600"
-            >
-              Dashboard
-            </Link> */}
 
             <button
               onClick={handleLogout}
@@ -144,24 +137,14 @@ function NavBar() {
               Logout
             </button>
           </>
-        ) : !user ? (
-          <Link
-            to="/"
-            className="text-black dark:text-white hover:text-green-600"
-          >
-            Login
-          </Link>
-        ) : null}
+        )}
 
+        {/* THEME — ALWAYS VISIBLE */}
         <button
           onClick={toggleDarkMode}
           className="cursor-pointer text-black dark:text-yellow-400"
         >
-          {darkMode ? (
-            <Sun size={24} />
-          ) : (
-            <Moon size={24} />
-          )}
+          {darkMode ? <Sun size={24} /> : <Moon size={24} />}
         </button>
 
       </div>
