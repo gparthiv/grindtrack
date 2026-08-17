@@ -3,6 +3,8 @@ import TaskCard from "../components/TaskCard";
 import { type ApiTaskType, type DayType } from "../data/taskData";
 import { useNavigate } from "react-router-dom";
 import { getLocalDate } from "../utils/formatDate";
+// import TaskAnalytics from "../components/TaskAnalytics";
+import TaskHeatmap from "../components/TaskHeatmap";
 // translates API json to required Day[x,y,z,[]] type
 // first name each json response from mongo as tasks which will initially be in DayType[]
 // define grouped object containing a string and the API response 
@@ -91,7 +93,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 
@@ -111,7 +113,7 @@ function Dashboard() {
 
       if (res.status === 401) {
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/");
       }
 
       return;
@@ -201,7 +203,7 @@ function Dashboard() {
         body: JSON.stringify({
           title,
           subject,
-          date: getLocalDate(), 
+          date: getLocalDate(),
         }),
       }
     );
@@ -223,9 +225,15 @@ function Dashboard() {
   }, []);
 
 
-  return (
-    <main className="pt-26">
+return (
+  <main className="pt-26 px-4 sm:px-6 md:px-8">
+    {/* <TaskAnalytics days={days} /> */}
 
+    <div className="animate-fade-in-delay">
+      <TaskHeatmap days={days} />
+    </div>
+
+    <div className="animate-fade-in-delay-2">
       {days.map((day) => (
         <TaskCard
           key={day.id}
@@ -235,9 +243,9 @@ function Dashboard() {
           createTask={createTask}
         />
       ))}
-
-    </main>
-  );
+    </div>
+  </main>
+);
 }
 
 export default Dashboard;
