@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 const API_URL = import.meta.env.VITE_API_URL;
+
 function Home() {
   const navigate = useNavigate();
 
@@ -9,6 +11,15 @@ function Home() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // If already logged in, don't show the auth page.
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   async function handleLogin() {
     try {
@@ -78,12 +89,10 @@ function Home() {
 
   return (
     <main className="min-h-screen pt-32 px-6 mt-16">
-
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-10 px-6">
 
         {/* LEFT HERO */}
         <section className="w-1/2">
-
           <h1 className="text-5xl font-extrabold text-black dark:text-white">
             Track your grind.
             <br />
@@ -96,28 +105,25 @@ function Home() {
             Keep your daily learning organized, track what you complete,
             and build consistency one day at a time.
           </p>
-
         </section>
-
 
         {/* AUTH BOX */}
         <section className="w-1/2 flex justify-center">
-  <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      isSignup ? handleSignup() : handleLogin();
-    }}
-    className="
-      w-full max-w-sm
-      px-8 py-10
-      rounded-xl
-      border border-slate-200
-      dark:border-neutral-700
-      bg-white dark:bg-neutral-900
-      shadow-sm
-    "
-  >
-
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              isSignup ? handleSignup() : handleLogin();
+            }}
+            className="
+              w-full max-w-sm
+              px-8 py-10
+              rounded-xl
+              border border-slate-200
+              dark:border-neutral-700
+              bg-white dark:bg-neutral-900
+              shadow-sm
+            "
+          >
             <h2 className="text-3xl font-bold text-black dark:text-white">
               {isSignup ? "Create account" : "Welcome back"}
             </h2>
@@ -128,7 +134,6 @@ function Home() {
                 : "Continue your learning journey."}
             </p>
 
-
             {/* NAME — SIGNUP ONLY */}
             {isSignup && (
               <input
@@ -136,7 +141,25 @@ function Home() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Name"
                 className="
-                mt-8 w-full px-4 py-3 rounded-md
+                  mt-8 w-full px-4 py-3 rounded-md
+                  border border-slate-300 dark:border-neutral-700
+                  bg-transparent
+                  text-black dark:text-white
+                  placeholder:text-slate-500
+                  dark:placeholder:text-slate-400
+                  outline-none
+                  focus:border-green-500
+                "
+              />
+            )}
+
+            {/* EMAIL */}
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="
+                mt-4 w-full px-4 py-3 rounded-md
                 border border-slate-300 dark:border-neutral-700
                 bg-transparent
                 text-black dark:text-white
@@ -145,27 +168,7 @@ function Home() {
                 outline-none
                 focus:border-green-500
               "
-              />
-            )}
-
-
-            {/* EMAIL */}
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              className="
-              mt-4 w-full px-4 py-3 rounded-md
-              border border-slate-300 dark:border-neutral-700
-              bg-transparent
-              text-black dark:text-white
-              placeholder:text-slate-500
-              dark:placeholder:text-slate-400
-              outline-none
-              focus:border-green-500
-            "
             />
-
 
             {/* PASSWORD */}
             <input
@@ -174,47 +177,45 @@ function Home() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="
-              mt-4 w-full px-4 py-3 rounded-md
-              border border-slate-300 dark:border-neutral-700
-              bg-transparent
-              text-black dark:text-white
-              placeholder:text-slate-500
-              dark:placeholder:text-slate-400
-              outline-none
-              focus:border-green-500
-            "
+                mt-4 w-full px-4 py-3 rounded-md
+                border border-slate-300 dark:border-neutral-700
+                bg-transparent
+                text-black dark:text-white
+                placeholder:text-slate-500
+                dark:placeholder:text-slate-400
+                outline-none
+                focus:border-green-500
+              "
             />
-
 
             {/* ACTION */}
             <button
               type="submit"
               className="
-              mt-6 w-full py-3 rounded-md
-              bg-green-500 hover:bg-green-600
-              text-white font-semibold
-              cursor-pointer
-              transition-colors
-            "
+                mt-6 w-full py-3 rounded-md
+                bg-green-500 hover:bg-green-600
+                text-white font-semibold
+                cursor-pointer
+                transition-colors
+              "
             >
               {isSignup ? "Sign Up" : "Login"}
             </button>
 
-
             {/* SWITCH */}
             <div className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-
               {isSignup ? (
                 <>
                   Already a user?{" "}
                   <button
+                    type="button"
                     onClick={() => setIsSignup(false)}
                     className="
-                    text-green-500
-                    hover:text-green-600
-                    font-semibold
-                    cursor-pointer
-                  "
+                      text-green-500
+                      hover:text-green-600
+                      font-semibold
+                      cursor-pointer
+                    "
                   >
                     Login
                   </button>
@@ -223,27 +224,23 @@ function Home() {
                 <>
                   Not a user?{" "}
                   <button
+                    type="button"
                     onClick={() => setIsSignup(true)}
                     className="
-                    text-green-500
-                    hover:text-green-600
-                    font-semibold
-                    cursor-pointer
-                  "
+                      text-green-500
+                      hover:text-green-600
+                      font-semibold
+                      cursor-pointer
+                    "
                   >
                     Sign Up
                   </button>
                 </>
               )}
-
             </div>
-
           </form>
-
         </section>
-
       </div>
-
     </main>
   );
 }
