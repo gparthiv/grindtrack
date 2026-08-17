@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+const API_URL = import.meta.env.VITE_API_URL;
 function Home() {
   const navigate = useNavigate();
 
@@ -13,7 +13,7 @@ function Home() {
   async function handleLogin() {
     try {
       const res = await fetch(
-        "http://localhost:8000/api/users/login",
+        `${API_URL}/api/users/login`,
         {
           method: "POST",
           headers: {
@@ -44,7 +44,7 @@ function Home() {
   async function handleSignup() {
     try {
       const res = await fetch(
-        "http://localhost:8000/api/users/signup",
+        `${API_URL}/api/users/signup`,
         {
           method: "POST",
           headers: {
@@ -102,20 +102,23 @@ function Home() {
 
         {/* AUTH BOX */}
         <section className="w-1/2 flex justify-center">
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      isSignup ? handleSignup() : handleLogin();
+    }}
+    className="
+      w-full max-w-sm
+      px-8 py-10
+      rounded-xl
+      border border-slate-200
+      dark:border-neutral-700
+      bg-white dark:bg-neutral-900
+      shadow-sm
+    "
+  >
 
-          <div
-            className="
-            w-full max-w-sm
-            px-8 py-10
-            rounded-xl
-            border border-slate-200
-            dark:border-neutral-700
-            bg-white dark:bg-neutral-900
-            shadow-sm
-          "
-          >
-
-            <h2 className="text-3xl font-[700] text-black dark:text-white">
+            <h2 className="text-3xl font-bold text-black dark:text-white">
               {isSignup ? "Create account" : "Welcome back"}
             </h2>
 
@@ -185,11 +188,11 @@ function Home() {
 
             {/* ACTION */}
             <button
-              onClick={isSignup ? handleSignup : handleLogin}
+              type="submit"
               className="
               mt-6 w-full py-3 rounded-md
               bg-green-500 hover:bg-green-600
-              text-white font-[600]
+              text-white font-semibold
               cursor-pointer
               transition-colors
             "
@@ -209,7 +212,7 @@ function Home() {
                     className="
                     text-green-500
                     hover:text-green-600
-                    font-[600]
+                    font-semibold
                     cursor-pointer
                   "
                   >
@@ -224,7 +227,7 @@ function Home() {
                     className="
                     text-green-500
                     hover:text-green-600
-                    font-[600]
+                    font-semibold
                     cursor-pointer
                   "
                   >
@@ -235,7 +238,7 @@ function Home() {
 
             </div>
 
-          </div>
+          </form>
 
         </section>
 

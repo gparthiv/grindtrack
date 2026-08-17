@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+const API_URL = import.meta.env.VITE_API_URL;
 function Signup() {
   const navigate = useNavigate();
 
@@ -10,7 +10,7 @@ function Signup() {
 
   async function handleSignup() {
     const res = await fetch(
-      "http://localhost:8000/api/users/signup",
+      `${API_URL}/api/users/signup`,
       {
         method: "POST",
         headers: {
