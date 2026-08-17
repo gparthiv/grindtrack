@@ -3,7 +3,6 @@ import TaskCard from "../components/TaskCard";
 import { type ApiTaskType, type DayType } from "../data/taskData";
 import { useNavigate } from "react-router-dom";
 import { getLocalDate } from "../utils/formatDate";
-// import TaskAnalytics from "../components/TaskAnalytics";
 import TaskHeatmap from "../components/TaskHeatmap";
 // translates API json to required Day[x,y,z,[]] type
 // first name each json response from mongo as tasks which will initially be in DayType[]
@@ -227,8 +226,6 @@ function Dashboard() {
 
 return (
   <main className="pt-26 px-4 sm:px-6 md:px-8">
-    {/* <TaskAnalytics days={days} /> */}
-
     <div className="animate-fade-in-delay">
       <TaskHeatmap days={days} />
     </div>
