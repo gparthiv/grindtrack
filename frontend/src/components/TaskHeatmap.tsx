@@ -150,13 +150,16 @@ function TaskHeatmap({ days }: TaskHeatmapProps) {
    */
 
   function getIntensity(completed: number) {
-
     if (completed === 0) {
       return "bg-slate-200 dark:bg-neutral-800";
     }
 
-    if (completed === 2) {
+    if (completed === 1) {
       return "bg-green-200 dark:bg-green-900";
+    }
+
+    if (completed === 2) {
+      return "bg-green-300 dark:bg-green-800";
     }
 
     if (completed === 3) {
@@ -167,7 +170,7 @@ function TaskHeatmap({ days }: TaskHeatmapProps) {
       return "bg-green-500 dark:bg-green-600";
     }
 
-    return "bg-green-700 dark:bg-green-500";
+    return "bg-green-600 dark:bg-green-500";
   }
 
 
