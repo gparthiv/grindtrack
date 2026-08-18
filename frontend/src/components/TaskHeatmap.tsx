@@ -151,19 +151,19 @@ function TaskHeatmap({ days }: TaskHeatmapProps) {
 
   function getIntensity(completed: number) {
 
-    if (completed === 2) {
+    if (completed === 0) {
       return "bg-slate-200 dark:bg-neutral-800";
     }
 
-    if (completed === 3) {
+    if (completed === 2) {
       return "bg-green-200 dark:bg-green-900";
     }
 
-    if (completed === 4) {
+    if (completed === 3) {
       return "bg-green-400 dark:bg-green-700";
     }
 
-    if (completed === 5) {
+    if (completed === 4) {
       return "bg-green-500 dark:bg-green-600";
     }
 
