@@ -138,7 +138,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const res = await fetch(
-      `http://localhost:8000/api/tasks/${taskId}`,
+      `${API_URL}/api/tasks/${taskId}`,
       {
         method: "PATCH",
         headers: {
