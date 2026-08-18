@@ -1,14 +1,15 @@
 const Task = require("../models/Task");
 
 // HELPER FUNCTION
-function isToday(date) {
+function isToday(date, timezone) {
   const taskDate = new Date(date);
-  const today = new Date;
-  return (
-    taskDate.getFullYear() === today.getFullYear() &&
-    taskDate.getMonth() === today.getMonth() &&
-    taskDate.getDate() === today.getDate()
-  )
+  const taskDateLocal = taskDate.toLocaleDateString("en-CA", {
+    timeZone: timezone,
+  });
+  const todayLocal = new Date().toLocaleDateString("en-CA", {
+    timeZone: timezone,
+  });
+  return taskDateLocal === todayLocal;
 }
 
 // GET / READ
@@ -31,16 +32,17 @@ async function patchTaskById(req, res) {
       _id: req.params.id,
       userId: req.user._id
     });
+    const timezone = req.headers["x-timezone"] || "UTC";
     if (!task) {
       return res.status(404).json({
         message: "Task not found"
       });
     }
 
-    if (!isToday(task.date)) {
+    if (!isToday(task.date, timezone)) {
       return res.status(403).json({
         msg: "Previous tasks cannot be edited"
-      })
+      });
     }
 
     const updatedTask = await Task.findOneAndUpdate(
@@ -76,10 +78,11 @@ async function deleteTaskById(req, res) {
         msg: "task not found"
       });
     }
-    if (!isToday(task.date)) {
+    const timezone = req.headers["x-timezone"] || "UTC";
+    if (!isToday(task.date, timezone)) {
       return res.status(403).json({
-        msg: "previous task not deletable"
-      })
+        msg: "Previous task not deletable"
+      });
     }
     const deletedTask = await Task.findOneAndDelete({
       _id: req.params.id,

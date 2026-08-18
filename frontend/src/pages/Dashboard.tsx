@@ -136,14 +136,15 @@ function Dashboard() {
     updates: TaskUpdate
   ) {
     const token = localStorage.getItem("token");
-
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const res = await fetch(
-      `${API_URL}/api/tasks/${taskId}`,
+      `http://localhost:8000/api/tasks/${taskId}`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "X-Timezone": timezone,
         },
         body: JSON.stringify(updates),
       }
@@ -224,25 +225,25 @@ function Dashboard() {
   }, []);
 
 
-return (
-  <main className="pt-26 px-4 sm:px-6 md:px-8">
-    <div className="animate-fade-in-delay">
-      <TaskHeatmap days={days} />
-    </div>
+  return (
+    <main className="pt-26 px-4 sm:px-6 md:px-8">
+      <div className="animate-fade-in-delay">
+        <TaskHeatmap days={days} />
+      </div>
 
-    <div className="animate-fade-in-delay-2">
-      {days.map((day) => (
-        <TaskCard
-          key={day.id}
-          day={day}
-          patchTask={patchTask}
-          deleteTask={deleteTask}
-          createTask={createTask}
-        />
-      ))}
-    </div>
-  </main>
-);
+      <div className="animate-fade-in-delay-2">
+        {days.map((day) => (
+          <TaskCard
+            key={day.id}
+            day={day}
+            patchTask={patchTask}
+            deleteTask={deleteTask}
+            createTask={createTask}
+          />
+        ))}
+      </div>
+    </main>
+  );
 }
 
 export default Dashboard;
