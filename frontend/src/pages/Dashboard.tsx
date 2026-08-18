@@ -161,9 +161,9 @@ function Dashboard() {
   }
 
 
-  // DELETE
   async function deleteTask(taskId: string) {
     const token = localStorage.getItem("token");
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     const res = await fetch(
       `${API_URL}/api/tasks/${taskId}`,
@@ -171,13 +171,14 @@ function Dashboard() {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
+          "X-Timezone": timezone,
         },
       }
     );
 
     if (!res.ok) {
       const data = await res.json();
-      console.log(data.message);
+      console.log(data.message || data.msg);
       return;
     }
 

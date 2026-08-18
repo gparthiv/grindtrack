@@ -41,7 +41,7 @@ async function patchTaskById(req, res) {
 
     if (!isToday(task.date, timezone)) {
       return res.status(403).json({
-        msg: "Previous tasks cannot be edited"
+        message: "Previous tasks cannot be edited"
       });
     }
 
@@ -73,30 +73,37 @@ async function deleteTaskById(req, res) {
       _id: req.params.id,
       userId: req.user._id
     });
+
     if (!task) {
       return res.status(404).json({
-        msg: "task not found"
+        message: "Task not found"
       });
     }
+
     const timezone = req.headers["x-timezone"] || "UTC";
+
     if (!isToday(task.date, timezone)) {
       return res.status(403).json({
-        msg: "Previous task not deletable"
+        message: "Previous task not deletable"
       });
     }
+
     const deletedTask = await Task.findOneAndDelete({
       _id: req.params.id,
       userId: req.user._id
     });
+
     if (!deletedTask) {
       return res.status(404).json({
-        message: "Task Not found"
+        message: "Task not found"
       });
     }
+
     res.status(204).send();
+
   } catch (err) {
     res.status(500).json({
-      message: "Failed to Delete Task"
+      message: "Failed to delete task"
     });
   }
 }
